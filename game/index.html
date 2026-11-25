@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chrono Kitchen — a 3D time-hopping cooking game</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%23ff6a1a'/%3E%3Ctext x='16' y='23' font-size='18' text-anchor='middle'%3E%F0%9F%94%A5%3C/text%3E%3C/svg%3E">
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #241a2e; font-family: Verdana, Geneva, sans-serif; }
+  #scene { position: fixed; inset: 0; display: block; }
+  .panel { position: fixed; background: rgba(16, 10, 24, 0.82); color: #fff; border: 2px solid rgba(255, 255, 255, 0.25); border-radius: 12px; padding: 10px 12px; box-sizing: border-box; }
+  .panel h2 { margin: 0 0 8px; font-size: 15px; letter-spacing: 1px; text-transform: uppercase; color: #ffd76a; }
+  #orders { top: 12px; left: 12px; width: 268px; }
+  .ticket { background: #fff8e6; color: #241a2e; border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; border-left: 6px solid #ff6a1a; }
+  .ticket .tname { font-weight: bold; font-size: 15px; }
+  .ticket .troute { font-size: 12px; margin: 4px 0; line-height: 1.5; }
+  .ticket .tbar { height: 8px; background: #e0d5c0; border-radius: 4px; overflow: hidden; }
+  .ticket .tbar > div { height: 100%; background: #3fae5a; }
+  .ticket.urgent { border-left-color: #d21f1f; }
+  .ticket.urgent .tbar > div { background: #d21f1f; }
+  .ticket .tpts { font-size: 12px; color: #6b4a2f; }
+  #clock { top: 12px; left: 50%; transform: translateX(-50%); text-align: center; padding: 6px 22px; }
+  #clock .big { font-size: 34px; font-weight: bold; line-height: 1; color: #fff; }
+  #clock .big.low { color: #ff5b4d; }
+  #clock .lbl { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #ffd76a; }
+  #scorebox { top: 12px; right: 12px; text-align: right; min-width: 170px; }
+  #scorebox .score { font-size: 28px; font-weight: bold; color: #ffd76a; line-height: 1; }
+  #scorebox .combo { font-size: 14px; color: #7ed957; font-weight: bold; }
+  #scorebox .hearts { font-size: 18px; letter-spacing: 2px; }
+  #pantry { left: 12px; bottom: 12px; width: 300px; }
+  #pantry .bins { display: flex; gap: 8px; }
+  .bin { flex: 1; background: #3d2f4a; border: 2px solid #8a6a9a; border-radius: 8px; padding: 6px 4px; text-align: center; cursor: pointer; color: #fff; font-size: 12px; }
+  .bin:hover { border-color: #ffd76a; }
+  .bin .dot { width: 22px; height: 22px; border-radius: 50%; margin: 0 auto 4px; border: 2px solid rgba(255,255,255,0.6); }
+  .bin .key { color: #ffd76a; font-weight: bold; }
+  #tray { left: 50%; transform: translateX(-50%); bottom: 12px; width: 380px; text-align: center; }
+  #tray .slots { display: flex; gap: 6px; justify-content: center; margin: 6px 0; }
+  .slot { width: 52px; height: 52px; border: 2px dashed #8a6a9a; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #cfc4dd; background: rgba(255,255,255,0.06); }
+  .slot.full { border-style: solid; border-color: #ffd76a; background: #3d2f4a; color: #fff; font-weight: bold; }
+  #tray .held { font-size: 13px; color: #ffd76a; min-height: 18px; }
+  #tray button { font-size: 15px; font-weight: bold; padding: 8px 18px; border-radius: 8px; border: none; cursor: pointer; margin: 2px; }
+  #serveBtn { background: #3fae5a; color: #fff; }
+  #serveBtn:disabled { background: #555; color: #aaa; cursor: default; }
+  #trashBtn { background: #8a2f2f; color: #fff; }
+  #hint { right: 12px; bottom: 12px; width: 230px; font-size: 12px; line-height: 1.6; color: #e8e0f0; }
+  #hint b { color: #ffd76a; }
+  #toast { position: fixed; left: 50%; top: 110px; transform: translateX(-50%); background: rgba(16,10,24,0.92); color: #ffd76a; font-size: 20px; font-weight: bold; padding: 10px 20px; border-radius: 10px; border: 2px solid #ffd76a; display: none; text-align: center; z-index: 5; white-space: nowrap; }
+  #overlay { position: fixed; inset: 0; background: rgba(12, 7, 18, 0.78); display: flex; align-items: center; justify-content: center; z-index: 10; }
+  #overlay .card { background: #2c2140; color: #fff; border: 3px solid #ffd76a; border-radius: 16px; padding: 28px 34px; max-width: 560px; text-align: center; }
+  #overlay h1 { margin: 0 0 4px; font-size: 40px; color: #ffd76a; letter-spacing: 2px; }
+  #overlay h3 { margin: 0 0 14px; font-size: 15px; color: #7ed957; font-weight: normal; }
+  #overlay p { font-size: 14px; line-height: 1.7; text-align: left; }
+  #overlay p b { color: #ffd76a; }
+  #overlay .bigbtn { font-size: 20px; font-weight: bold; padding: 12px 34px; border-radius: 10px; border: none; background: #ff6a1a; color: #fff; cursor: pointer; margin-top: 10px; }
+  #overlay .final { font-size: 22px; color: #ffd76a; font-weight: bold; }
+  #status { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+</style>
+</head>
+<body>
+<canvas id="scene" aria-label="Chrono Kitchen: a 3D cooking game. Route ingredients across the fire-pit, hearth oven and nano-cooker to serve orders before the timer runs out."></canvas>
+<div id="orders" class="panel"><h2>Order Board</h2><div id="tickets"></div></div>
+<div id="clock" class="panel"><div class="lbl">Shift timer</div><div class="big" id="clockTime">2:30</div><div class="lbl" id="rushLabel">Service calm</div></div>
+<div id="scorebox" class="panel"><div class="score" id="scoreVal">0</div><div class="combo" id="comboVal">Combo x1</div><div class="hearts" id="heartsVal">♥♥♥</div></div>
+<div id="pantry" class="panel"><h2>Pantry — click or press 1–4</h2><div class="bins" id="bins"></div></div>
+<div id="tray" class="panel"><h2>Plate — assembly counter</h2><div class="held" id="heldVal">Hands empty — grab an ingredient</div><div class="slots" id="plateSlots"></div><button id="serveBtn" disabled>🍽 Serve dish</button><button id="trashBtn">🗑 Clear plate</button></div>
+<div id="hint" class="panel"><b>WASD / arrows</b> move the chef<br><b>Click</b> a station (or press <b>E</b>) to use it<br><b>1–4</b> grab from pantry · <b>Q</b> drop held item<br>Grill, bake or nano-cook, then plate &amp; serve!</div>
+<div id="toast"></div>
+<div id="overlay"></div>
+<p id="status" role="status" aria-live="polite"></p>
+<script type="importmap">{"imports": {"three": "./vendor/three.min.js"}}</script>
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
