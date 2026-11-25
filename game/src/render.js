@@ -134,7 +134,7 @@ export class KitchenHUD {
 export function cameraPreset(name) {
   const presets = {
     wide: { position: [0, 12.6, 10.8], target: [0, 0, -0.4] },
-    orders: { position: [2.0, 8.0, 7.0], target: [-2.0, 0.8, -0.5] },
+    orders: { position: [6.4, 5.2, 9.4], target: [0.8, 1.0, 0.2] },
     prep: { position: [2.8, 5.2, 5.2], target: [5.4, 1.0, 0.2] },
     service: { position: [1.5, 7.5, 8.5], target: [2.5, 0.8, 1.2] },
   };

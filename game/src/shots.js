@@ -74,8 +74,8 @@ const SHOTS = {
     game.timer.elapsedSeconds = 66;
     game.timer.running = true;
     game.plateItems = ['grilled', 'bread'];
-    game.chef.position.set(-4.4, 0, -3.2);
-    game.chef.rotation.y = Math.PI;
+    game.chef.position.set(3.6, 0, -1.0);
+    game.chef.rotation.y = Math.PI / 2;
     placeOnStation(game, 'firePit', 'rawMeat', 2.4, 4);
     placeOnStation(game, 'hearth', 'dough', 3.5, 5);
     game.cameraPresetName = 'orders';
